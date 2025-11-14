@@ -27,7 +27,7 @@ export const Information2 = () => {
   return (
     <>
       <div className="info-card">
-        <div className="label">마음 전하기</div>
+        <div className="label">마음전하기</div>
         <div className="content">
           참석이 어려워 직접 축하해주지 못하는
           <br />

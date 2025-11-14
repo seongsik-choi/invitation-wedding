@@ -1,4 +1,6 @@
 .share-button {
+  position: relative;
+  
   .ktalk-share {
     position: relative;
     z-index: 3;
@@ -8,5 +10,42 @@
       width: 0.7rem;
       height: 0.7rem;
     }
+  }
+
+  .toast-message {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    z-index: 1000;
+    animation: toastFadeIn 0.3s ease-out, toastFadeOut 0.3s ease-in 1.7s;
+    pointer-events: none;
+  }
+}
+
+@keyframes toastFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes toastFadeOut {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-1rem);
   }
 }

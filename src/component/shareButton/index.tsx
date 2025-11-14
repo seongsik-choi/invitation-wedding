@@ -1,3 +1,4 @@
+import { useState } from "react"
 import {
   BRIDE_FULLNAME,
   GROOM_FULLNAME,
@@ -18,42 +19,12 @@ const getShareText = () => {
   return `${GROOM_FULLNAME} ❤️ ${BRIDE_FULLNAME}의 결혼식에 초대합니다.\n${WEDDING_DATE.format(WEDDING_DATE_FORMAT)}\n${LOCATION}`
 }
 
-const shareToKakaoTalk = () => {
-  const url = getCurrentUrl()
-  const text = getShareText()
-  
-  // 모바일에서 카카오톡 앱 열기 시도
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent
-  )
-  
-  if (isMobile) {
-    // 모바일: 카카오톡 앱으로 공유 시도
-    window.location.href = `intent://send?text=${encodeURIComponent(text + "\n" + url)}#Intent;scheme=kakaotalk;package=com.kakao.talk;end`
-    
-    // 앱이 없으면 Web Share API 사용
-    setTimeout(() => {
-      if (navigator.share) {
-        navigator.share({
-          title: `${GROOM_FULLNAME} ❤️ ${BRIDE_FULLNAME}의 결혼식에 초대합니다.`,
-          text: text,
-          url: url,
-        }).catch(() => {
-          // 공유 취소 시 아무것도 하지 않음
-        })
-      }
-    }, 500)
-  } else {
-    // 데스크톱: 클립보드에 복사
-    copyToClipboard(text + "\n" + url)
-  }
-}
 
-const copyToClipboard = async (text: string) => {
+const copyToClipboard = async (text: string, onSuccess: () => void) => {
   try {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       await navigator.clipboard.writeText(text)
-      alert("링크가 클립보드에 복사되었습니다!")
+      onSuccess()
     } else {
       // Fallback for older browsers
       const textArea = document.createElement("textarea")
@@ -65,7 +36,7 @@ const copyToClipboard = async (text: string) => {
       textArea.select()
       try {
         document.execCommand("copy")
-        alert("링크가 클립보드에 복사되었습니다!")
+        onSuccess()
       } catch (err) {
         console.error("복사 실패:", err)
       }
@@ -76,39 +47,56 @@ const copyToClipboard = async (text: string) => {
   }
 }
 
-const handleShare = async () => {
-  const url = getCurrentUrl()
-  const text = getShareText()
-  const title = `${GROOM_FULLNAME} ❤️ ${BRIDE_FULLNAME}의 결혼식에 초대합니다.`
-
-  // Web Share API 지원 확인 (모바일 브라우저)
-  if (navigator.share) {
-    try {
-      await navigator.share({
-        title: title,
-        text: text,
-        url: url,
-      })
-    } catch (err) {
-      // 사용자가 공유를 취소한 경우
-      if ((err as Error).name !== "AbortError") {
-        console.error("공유 실패:", err)
-        // Web Share API 실패 시 카카오톡 공유로 fallback
-        shareToKakaoTalk()
-      }
-    }
-  } else {
-    // Web Share API를 지원하지 않는 경우 (데스크톱 등)
-    shareToKakaoTalk()
-  }
-}
-
 export const ShareButton = () => {
+  const [showToast, setShowToast] = useState(false)
+
+  const handleCopySuccess = () => {
+    setShowToast(true)
+    setTimeout(() => {
+      setShowToast(false)
+    }, 2000)
+  }
+
+  const handleShare = async () => {
+    const url = getCurrentUrl()
+    const text = getShareText()
+    const title = `${GROOM_FULLNAME} ❤️ ${BRIDE_FULLNAME}의 결혼식에 초대합니다.`
+
+    // 모바일 감지
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    )
+
+    // Web Share API 지원 확인 (모바일 브라우저에서만)
+    if (isMobile && navigator.share) {
+      try {
+        await navigator.share({
+          title: title,
+          text: text,
+          url: url,
+        })
+      } catch (err) {
+        // 사용자가 공유를 취소한 경우
+        if ((err as Error).name !== "AbortError") {
+          console.error("공유 실패:", err)
+          // Web Share API 실패 시 클립보드 복사로 fallback (URL만)
+          copyToClipboard(url, handleCopySuccess)
+        }
+      }
+    } else {
+      // 웹(데스크톱) 또는 Web Share API를 지원하지 않는 경우: 클립보드에 URL만 복사
+      copyToClipboard(url, handleCopySuccess)
+    }
+  }
+
   return (
     <LazyDiv className="footer share-button">
       <button className="ktalk-share" onClick={handleShare}>
-        <img src={ktalkIcon} alt="ktalk-icon" /> 카카오톡으로 공유하기
+        <img src={ktalkIcon} alt="ktalk-icon" /> 공유하기
       </button>
+      {showToast && (
+        <div className="toast-message">복사가 완료되었습니다</div>
+      )}
     </LazyDiv>
   )
 }
