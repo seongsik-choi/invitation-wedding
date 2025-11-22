@@ -23,7 +23,7 @@ export const Location = () => {
           <div className="heading">대중교통</div>
           <div />
           <div className="content">
-            * 지하철 이용시
+           <b>지하철</b>
             <br />
             <b>9호선 봉은사역</b> 4번 출구 도보 약 4분
             <br />
@@ -46,20 +46,6 @@ export const Location = () => {
             - 지선: 2413, 2415, 3217, 3414, 4318
             <br />
             - 직행: 9407, 9507, 9607
-          </div>
-
-          <div />
-          <div className="content">
-            * 버스 이용 시
-            <br />
-            - 간선(파랑): 461, 641
-            <br />
-            - 지선(초록): 5413, 5524, 5528
-            <br />
-            반드시 <b>낙성대입구</b> 하차
-            <br />→ 마을버스 <b>관악 02번</b> 이용
-            <br />
-            이하 위와 동일합니다.
           </div>
         </div>
         <div className="location-info">
